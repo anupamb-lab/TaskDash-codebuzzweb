@@ -2,8 +2,8 @@ import "./globals.css";
 import type { ReactNode } from "react";
 
 export const metadata = {
-  title: "Monday Lite",
-  description: "Simple task & project manager built with Next.js"
+  title: "Task Dash - Simple Task & Project Manager",
+  description: "Simple task & project manager by codebuzzweb Developers."
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
