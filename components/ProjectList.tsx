@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { Project } from "@/types";
+import { useAuth } from "./AuthProvider";
 
 interface Props {
   onSelectProject: (project: Project) => void;
@@ -9,6 +10,8 @@ interface Props {
 }
 
 export function ProjectList({ onSelectProject, selectedProjectId }: Props) {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin' || (user as any)?.role === 'admin';
   const [projects, setProjects] = useState<Project[]>([]);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -138,16 +141,18 @@ export function ProjectList({ onSelectProject, selectedProjectId }: Props) {
                   <h2 className="font-semibold truncate max-w-[10rem]">
                     {project.name}
                   </h2>
-                  <button
-                    type="button"
-                    onClick={e => {
-                      e.stopPropagation();
-                      handleDeleteProject(project.id);
-                    }}
-                    className="text-xs text-red-500 hover:text-red-600"
-                  >
-                    Delete
-                  </button>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={e => {
+                        e.stopPropagation();
+                        handleDeleteProject(project.id);
+                      }}
+                      className="text-xs text-red-500 hover:text-red-600"
+                    >
+                      Delete
+                    </button>
+                  )}
                 </div>
                 {project.description && (
                   <p className="mt-1 text-xs text-slate-500 line-clamp-2">
@@ -166,24 +171,27 @@ export function ProjectList({ onSelectProject, selectedProjectId }: Props) {
             className="flex flex-col gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3"
           >
             <span className="text-sm font-medium text-slate-700">
-              New project
+              New project {isAdmin ? '' : '(Admin only)'}
             </span>
             <input
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
               placeholder="Project name"
               value={name}
               onChange={e => setName(e.target.value)}
+              disabled={!isAdmin}
             />
             <textarea
-              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
               placeholder="Description (optional)"
               rows={2}
               value={description}
               onChange={e => setDescription(e.target.value)}
+              disabled={!isAdmin}
             />
             <button
               type="submit"
-              className="mt-1 inline-flex items-center justify-center rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700"
+              disabled={!isAdmin}
+              className="mt-1 inline-flex items-center justify-center rounded-md bg-blue-600 px-2 py-1 text-xs font-medium text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Add project
             </button>

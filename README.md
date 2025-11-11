@@ -4,14 +4,14 @@ A web application for managing internal daily tasks and assigning them to team m
 
 ## Overview
 
-TaskDash is a lightweight, modern task management system built with Next.js, React, TypeScript, and Prisma. It allows teams to create projects, organize tasks into workflow stages (To Do, In Progress, Done), assign tasks to team members, set priorities, and track due dates.
+TaskDash is a lightweight, modern task management system built with Next.js, React, TypeScript, and Prisma. It allows teams to create projects, organize tasks into workflow stages (Planned, In Progress, Done), assign tasks to team members, set priorities, and track due dates.
 
 All data is persisted in a remote MySQL database, making it accessible from anywhere and shareable across your team.
 
 ## Features
 
 - 📋 **Project Management**: Create, view, and delete projects with descriptions
-- ✅ **Task Board**: Kanban-style board with three workflow stages (To Do, In Progress, Done)
+- ✅ **Task Board**: Kanban-style board with three workflow stages (Planned, In Progress, Done)
 - 👤 **Task Assignment**: Assign tasks to team members
 - 🎯 **Priority Levels**: Set task priority (Low, Medium, High) with visual indicators
 - 📅 **Due Dates**: Track task deadlines
@@ -180,7 +180,7 @@ model Task {
    - Click "Save"
 
 3. **Manage Tasks**
-   - Drag tasks between columns (To Do → In Progress → Done) or use "Move to" buttons
+   - Drag tasks between columns (Planned → In Progress → Done) or use "Move to" buttons
    - Click on a task to edit it
    - Click the ✕ button to delete a task
    - Use filters to view tasks by assignee or priority

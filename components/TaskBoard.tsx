@@ -3,18 +3,21 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Project, Task, Status } from "@/types";
 import { TaskModal } from "./TaskModal";
+import { useAuth } from "./AuthProvider";
 
 interface Props {
   project?: Project;
 }
 
 const statusColumns: { id: Status; label: string }[] = [
-  { id: "todo", label: "To do" },
+  { id: "todo", label: "Planned" },
   { id: "in_progress", label: "In progress" },
   { id: "done", label: "Done" }
 ];
 
 export function TaskBoard({ project }: Props) {
+  const { user } = useAuth();
+  const isAdmin = (user as any)?.role === 'admin';
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filterAssignee, setFilterAssignee] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
@@ -243,16 +246,22 @@ export function TaskBoard({ project }: Props) {
                       <h3 className="font-medium text-slate-800 line-clamp-2">
                         {task.title}
                       </h3>
-                      <button
-                        type="button"
-                        onClick={e => {
-                          e.stopPropagation();
-                          handleDeleteTask(task.id);
-                        }}
-                        className="text-[10px] text-red-500 hover:text-red-600"
-                      >
-                        ✕
-                      </button>
+                      {(!task.assignee && !(task as any).assigneeId) || isAdmin ? (
+                        <button
+                          type="button"
+                          onClick={e => {
+                            e.stopPropagation();
+                            handleDeleteTask(task.id);
+                          }}
+                          className="text-[10px] text-red-500 hover:text-red-600"
+                        >
+                          ✕
+                        </button>
+                      ) : (
+                        <span className="text-[10px] text-slate-400" title="Only admin can delete assigned tasks">
+                          🔒
+                        </span>
+                      )}
                     </div>
                     {task.description && (
                       <p className="mt-1 text-[11px] text-slate-500 line-clamp-3">

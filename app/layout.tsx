@@ -1,5 +1,7 @@
 import "./globals.css";
 import type { ReactNode } from "react";
+import { AuthProvider } from "@/components/AuthProvider";
+import { Header } from "@/components/Header";
 
 export const metadata = {
   title: "Task Dash - Simple Task & Project Manager",
@@ -10,7 +12,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="min-h-screen">
-        <div className="flex min-h-screen">
+        <AuthProvider>
+          <Header />
+          <div className="flex min-h-screen">
           <aside className="hidden md:flex w-64 bg-slate-900 text-slate-100 flex-col p-4 gap-4">
             <div className="text-2xl font-bold tracking-tight">Monday Lite</div>
             <nav className="mt-4 flex flex-col gap-2 text-sm text-slate-200">
@@ -28,7 +32,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             </header>
             <div className="max-w-6xl mx-auto p-4 md:p-8">{children}</div>
           </main>
-        </div>
+          </div>
+        </AuthProvider>
       </body>
     </html>
   );

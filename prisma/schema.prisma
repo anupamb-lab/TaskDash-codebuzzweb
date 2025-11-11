@@ -22,6 +22,11 @@ enum Priority {
   high
 }
 
+enum Role {
+  admin
+  member
+}
+
 model Project {
   id          String   @id @default(cuid())
   name        String
@@ -39,8 +44,24 @@ model Task {
   description String?
   status      Status   @default(todo)
   priority    Priority @default(medium)
+  // legacy assignee name (kept for compatibility with existing data/UI)
   assignee    String?
+  // new relation to User (optional)
+  assigneeId  String?
+  assigneeUser User?   @relation("UserTasks", fields: [assigneeId], references: [id])
   dueDate     DateTime?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String?
+  email       String   @unique
+  password    String
+  role        Role     @default(Team member)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  // tasks assigned to this user
+  tasks       Task[]   @relation("UserTasks")
 }
