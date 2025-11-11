@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Priority, Status, Task } from "@/types";
 
 interface Props {
@@ -12,7 +12,7 @@ interface Props {
 }
 
 const statusOptions: { value: Status; label: string }[] = [
-  { value: "todo", label: "To do" },
+  { value: "todo", label: "Planned" },
   { value: "in_progress", label: "In progress" },
   { value: "done", label: "Done" }
 ];
@@ -29,9 +29,57 @@ export function TaskModal({ open, onClose, onSave, initial, projectId }: Props) 
   const [status, setStatus] = useState<Status>(initial?.status ?? "todo");
   const [priority, setPriority] = useState<Priority>(initial?.priority ?? "medium");
   const [assignee, setAssignee] = useState(initial?.assignee ?? "");
+  const [assigneeId, setAssigneeId] = useState<string | undefined>(
+    // @ts-ignore
+    (initial as any)?.assigneeId
+  );
+  const [users, setUsers] = useState<Array<{ id: string; name?: string; email?: string }>>([]);
   const [dueDate, setDueDate] = useState(
     initial?.dueDate ? initial.dueDate.slice(0, 10) : ""
   );
+
+  useEffect(() => {
+    if (!open) return;
+    let mounted = true;
+    (async function load() {
+      try {
+        const res = await fetch('/api/users');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (!mounted) return;
+        setUsers(data || []);
+      } catch (err) {
+        // ignore
+      }
+    })();
+    return () => { mounted = false; };
+  }, [open]);
+
+  // Keep internal form state in sync when opening the modal or when
+  // the `initial` task prop changes (e.g. user clicks a task to edit).
+  useEffect(() => {
+    if (!open) {
+      // reset to defaults when modal closed
+      setTitle("");
+      setDescription("");
+      setStatus("todo");
+      setPriority("medium");
+      setAssignee("");
+      setAssigneeId(undefined);
+      setDueDate("");
+      return;
+    }
+
+    // populate fields from `initial` when modal opens for editing
+    setTitle(initial?.title ?? "");
+    setDescription(initial?.description ?? "");
+    setStatus(initial?.status ?? "todo");
+    setPriority(initial?.priority ?? "medium");
+    setAssignee(initial?.assignee ?? "");
+    // @ts-ignore
+    setAssigneeId((initial as any)?.assigneeId ?? undefined);
+    setDueDate(initial?.dueDate ? initial.dueDate.slice(0, 10) : "");
+  }, [initial, open]);
 
   if (!open) return null;
 
@@ -46,8 +94,10 @@ export function TaskModal({ open, onClose, onSave, initial, projectId }: Props) 
       status,
       priority,
       assignee: assignee.trim() || undefined,
+      // @ts-ignore allow sending assigneeId even if Task type doesn't include it
+      assigneeId: assigneeId || undefined,
       dueDate: dueDate ? new Date(dueDate).toISOString() : undefined
-    });
+    } as any);
     onClose();
   }
 
@@ -122,15 +172,28 @@ export function TaskModal({ open, onClose, onSave, initial, projectId }: Props) 
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-medium text-slate-600">
-                Assignee
-              </label>
-              <input
-                className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={assignee}
-                onChange={e => setAssignee(e.target.value)}
-                placeholder="e.g. Anupam"
-              />
+                <label className="text-xs font-medium text-slate-600">Assignee</label>
+                <select
+                  className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={assigneeId || ""}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setAssigneeId(val || undefined);
+                    const user = users.find(u => u.id === val);
+                    if (user) setAssignee(user.name || user.email || '');
+                  }}
+                >
+                  <option value="">Unassigned / choose by name</option>
+                  {users.map(u => (
+                    <option key={u.id} value={u.id}>{u.name || u.email}</option>
+                  ))}
+                </select>
+                <input
+                  className="mt-2 w-full rounded-md border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={assignee}
+                  onChange={e => setAssignee(e.target.value)}
+                  placeholder="Or type a name (legacy)"
+                />
             </div>
             <div>
               <label className="text-xs font-medium text-slate-600">
